@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Easy Laundry — Угаалгын Цаг Захиалга</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<meta name="theme-color" content="#1B4FFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧺</text></svg>">
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- PAGE TRANSITION -->
+<div class="page-transition" id="pageTransition">
+  <div class="pt-panel"></div>
+  <div class="pt-panel"></div>
+  <div class="pt-panel"></div>
+  <div class="pt-panel"></div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- QR MODAL -->
+<div class="qr-modal-overlay" id="qrModal">
+  <div class="qr-modal">
+    <button class="qr-modal-close" onclick="closeQRModal()">✕</button>
+    <div style="font-size:2rem;margin-bottom:12px;">📱</div>
+    <h3 id="qrModalTitle">QR код</h3>
+    <p id="qrModalDesc">Дор дурдсан кодыг ашиглан машинаа нээнэ үү</p>
+    <div id="qrModalCode"></div>
+    <div id="qrModalContainer"></div>
+    <p class="qr-modal-hint">📲 Утасны камераар QR кодыг уншуулж угаалгын машиныхаа хаалгыг нээнэ үү</p>
+    <div class="qr-modal-btns">
+      <button class="btn-download-qr" onclick="downloadQRModal()">⬇ Хадгалах</button>
+      <button class="btn-cancel" style="padding:10px 20px;" onclick="closeQRModal()">Хаах</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+    <div class="modal-logo">
+      <div class="nav-logo-icon">🧺</div>
+      <span class="modal-logo-text">Easy Laundry</span>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchTab('login')">Нэвтрэх</button>
+      <button class="modal-tab" onclick="switchTab('register')">Бүртгүүлэх</button>
+    </div>
+    <div id="login-form">
+      <div class="form-field">
+        <label>ИМЭЙЛ ХАЯГ</label>
+        <input type="email" id="login-email" placeholder="you@university.edu.mn"/>
+        <div class="field-error" id="login-email-err">Имэйл хаяг оруулна уу</div>
+      </div>
+      <div class="form-field">
+        <label>НУУЦ ҮГ</label>
+        <input type="password" id="login-pass" placeholder="••••••••"/>
+        <div class="field-error" id="login-pass-err">Нууц үг оруулна уу</div>
+      </div>
+      <button class="btn-auth" onclick="handleLogin()">Нэвтрэх →</button>
+      <div class="auth-divider">эсвэл</div>
+      <button class="auth-google" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Google-ээр нэвтрэх
+      </button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-row2">
+        <div class="form-field">
+          <label>НЭР</label>
+          <input type="text" id="reg-fname" placeholder="Болд"/>
+          <div class="field-error" id="reg-fname-err">Нэр оруулна уу</div>
+        </div>
+        <div class="form-field">
+          <label>ОВОГ</label>
+          <input type="text" id="reg-lname" placeholder="Баатар"/>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>ИМЭЙЛ ХАЯГ</label>
+        <input type="email" id="reg-email" placeholder="you@muls.edu.mn"/>
+        <div class="field-error" id="reg-email-err">Зөв имэйл оруулна уу</div>
+      </div>
+      <div class="form-field">
+        <label>СУРГУУЛИЙН НЭР</label>
+        <select id="reg-univ">
+          <option value="">Сургуулиа сонгоно уу</option>
+          <option>МУИС</option><option>ШУТИС</option><option>МУБИС</option><option>ХААИС</option><option>УБИС</option><option>Бусад</option>
+        </select>
+        <div class="field-error" id="reg-univ-err">Сургуулиа сонгоно уу</div>
+      </div>
+      <div class="form-field">
+        <label>НУУЦ ҮГ</label>
+        <input type="password" id="reg-pass" placeholder="Хамгийн багадаа 8 тэмдэгт"/>
+        <div class="field-error" id="reg-pass-err">8-аас дээш тэмдэгт оруулна уу</div>
+      </div>
+      <button class="btn-auth" onclick="handleRegister()">Бүртгүүлэх →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL CONFIRM MODAL -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="cancel-modal">
+    <div style="font-size:2.5rem;margin-bottom:16px;">⚠️</div>
+    <h2 style="font-size:1.4rem;margin-bottom:8px;">Захиалга цуцлах уу?</h2>
+    <p style="font-size:.88rem;color:var(--muted);line-height:1.7;margin-bottom:28px;">Энэ үйлдлийг буцаах боломжгүй. Захиалсан цаг чөлөөлөгдөх болно.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="btn-cancel" onclick="closeModal('cancelModal')" style="margin:0;">Болих</button>
+      <button class="btn-confirm" onclick="confirmCancel()" style="margin:0;">Тийм, цуцлах</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a class="nav-brand" href="#home">
+    <div class="nav-logo-icon">🧺</div>
+    Easy Laundry
+  </a>
+  <ul class="nav-links">
+    <li><a onclick="smoothNav('#home')" class="active">Нүүр</a></li>
+    <li><a onclick="smoothNav('#services')">Үйлчилгээ</a></li>
+    <li><a onclick="smoothNav('#booking')">Захиалга</a></li>
+    <li><a onclick="smoothNav('#about')">Бидний тухай</a></li>
+    <li><a onclick="smoothNav('#contact')">Холбоо барих</a></li>
+  </ul>
+  <div class="nav-actions">
+    <div class="user-info-bar" id="userInfoBar">
+      <div class="user-avatar" id="userAvatar">Б</div>
+      <span class="user-name" id="userName">Болд</span>
+      <button class="btn-logout" onclick="logout()">Гарах</button>
+    </div>
+    <button class="btn-nav-login" id="loginBtn" onclick="openModal('authModal')">Нэвтрэх</button>
+    <button class="btn-nav-cta" onclick="scrollToBooking()">Цаг захиалах →</button>
+    <div class="hamburger" onclick="toggleMobile()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#home" onclick="closeMobile()">🏠 Нүүр</a>
+  <a href="#services" onclick="closeMobile()">✨ Үйлчилгээ</a>
+  <a href="#booking" onclick="closeMobile()">📅 Захиалга</a>
+  <a href="#about" onclick="closeMobile()">💙 Бидний тухай</a>
+  <a href="#contact" onclick="closeMobile()">📞 Холбоо барих</a>
+  <div class="mobile-menu-footer">
+    <button class="btn-nav-login" style="flex:1;" onclick="openModal('authModal');closeMobile()">Нэвтрэх</button>
+    <button class="btn-nav-cta" style="flex:1;" onclick="scrollToBooking();closeMobile()">Захиалах</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="home">
+  <div class="hero-bg">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-grid-lines"></div>
+  </div>
+  <div class="hero-wrapper">
+    <div class="hero-left">
+      <div class="hero-pill"><span class="dot"></span> Монголын оюутнуудад зориулсан</div>
+      <h1>Угаалгын цаг<br/><span class="accent">хялбар</span><br/><span class="accent2">захиалах</span></h1>
+      <p class="hero-desc">Дотуур байрны угаалгын машин болон өөртөө үйлчлэх угаалгийн газрын ачаалалыг шалгаад тохиромжтой цагаа урьдчилан захиалаарай.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="scrollToBooking()">Цаг захиалах →</button>
+        <a class="btn-secondary" onclick="smoothNav('#how')">Хэрхэн ажилладаг?</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num" data-count="10">0</div><div class="stat-label">Их дээд сургууль</div></div>
+        <div class="stat"><div class="stat-num" data-count="200">0</div><div class="stat-label">Угаалгын машин</div></div>
+        <div class="stat"><div class="stat-num" data-count="5000">0</div><div class="stat-label">Оюутан хэрэглэгч</div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="floating-badge fb1">🟢 12 машин чөлөөтэй</div>
+      <div class="floating-badge fb2">🔔 Цаг баталгаажлаа!</div>
+      <div class="live-card">
+        <div class="live-card-header">
+          <div class="live-card-title">🏢 МУИС — 3-р байр</div>
+          <div class="live-badge"><span class="live-dot"></span> Бодит цаг</div>
+        </div>
+        <div class="machine-item free" onclick="selectMachineFromHero(1)">
+          <div class="machine-left"><span class="machine-emoji">🫧</span><div><div class="machine-name-text">Машин #1</div><div class="machine-time">Одоо ашиглаж болно</div></div></div>
+          <span class="tag tag-free">Чөлөөтэй</span>
+        </div>
+        <div class="machine-item busy">
+          <div class="machine-left"><span class="machine-emoji">🫧</span><div><div class="machine-name-text">Машин #2</div><div class="machine-time">38 мин үлдсэн</div></div></div>
+          <span class="tag tag-busy">Ашиглагдаж байна</span>
+        </div>
+        <div class="machine-item soon" onclick="selectMachineFromHero(3)">
+          <div class="machine-left"><span class="machine-emoji">🫧</span><div><div class="machine-name-text">Машин #3</div><div class="machine-time">15 мин дараа чөлөөлөгдөнө</div></div></div>
+          <span class="tag tag-soon">Удахгүй</span>
+        </div>
+        <div class="machine-item free" onclick="selectMachineFromHero(4)">
+          <div class="machine-left"><span class="machine-emoji">🫧</span><div><div class="machine-name-text">Машин #4</div><div class="machine-time">Одоо ашиглаж болно</div></div></div>
+          <span class="tag tag-free">Чөлөөтэй</span>
+        </div>
+        <div class="live-footer">
+          <span class="live-footer-info">🕐 Шинэчлэгдсэн: сая</span>
+          <button class="btn-book-mini" onclick="scrollToBooking()">Захиалах</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="padded">
+  <div class="container">
+    <div class="services-intro">
+      <div class="rv">
+        <div class="section-eyebrow"><span class="line"></span> Үйлчилгээ</div>
+        <h2 class="section-h">Бид юу санал болгодог вэ?</h2>
+        <p class="section-sub">Easy Laundry нь оюутнуудын цагийг хэмнэх, угаалгын үйл ажиллагааг илүү ухаалаг болгоход чиглэсэн иж бүрэн шийдэл.</p>
+      </div>
+      <a onclick="smoothNav('#booking')" class="services-cta-link rv">Цаг захиалах →</a>
+    </div>
+    <div class="services-grid">
+      <div class="svc-card rv"><span class="svc-num">01</span><div class="svc-icon-wrap">📅</div><h3>Урьдчилан цаг захиалах</h3><p>Өөрт тохиромжтой цагаа сонгоод угаалгын машинаа урьдчилан эзэмшиж, дараалалд хүлээхгүй байгаарай.</p></div>
+      <div class="svc-card rv delay-1"><span class="svc-num">02</span><div class="svc-icon-wrap">📊</div><h3>Бодит цагийн ачаалал</h3><p>Угаалгын газрын бодит ачаалалыг шалгаад хамгийн тухтай цагийг сонго. Дүүрэн үеийг зайлсхий.</p></div>
+      <div class="svc-card rv delay-2"><span class="svc-num">03</span><div class="svc-icon-wrap">🔔</div><h3>Мэдэгдэл & Сануулга</h3><p>Угаалга дуусахад болон таны захиалсан цаг ойртоход утсаар мэдэгдэл авна.</p></div>
+      <div class="svc-card rv delay-1"><span class="svc-num">04</span><div class="svc-icon-wrap">🏫</div><h3>Олон байр хамрах</h3><p>Нэг апп-аар олон дотуур байр болон өөртөө үйлчлэх угаалгийн газрыг удирдаж болно.</p></div>
+      <div class="svc-card rv delay-2"><span class="svc-num">05</span><div class="svc-icon-wrap">📱</div><h3>QR кодоор нэвтрэх</h3><p>Захиалгын QR кодоороо машиныхаа хаалгыг нэвтэрч, утасны апп-аар угаалгаа хянана.</p></div>
+      <div class="svc-card rv delay-3"><span class="svc-num">06</span><div class="svc-icon-wrap">🏢</div><h3>Байгууллагын удирдлага</h3><p>Сургуулийн захиргаанд зориулсан тайлан, машины хуваарь, засвар бүртгэлийн хэрэгсэл.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="padded">
+  <div class="how-bg"></div>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="rv" style="text-align:center;max-width:600px;margin:0 auto;">
+      <div class="section-eyebrow" style="justify-content:center;"><span class="line"></span> Хэрхэн ажилладаг</div>
+      <h2 class="section-h">4 алхамд угаалга захиалах</h2>
+      <p class="section-sub" style="margin:0 auto;">Маш хялбар, хурдан, ухаалаг — хэдхэн секундын дотор цагаа баталгаажуулаарай.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card rv"><span class="how-icon">🎓</span><div class="how-num-wrap">1</div><h3>Бүртгүүлэх</h3><p>Сургуулийн имэйл эсвэл оюутны үнэмлэхээр хурдан бүртгүүлнэ. 30 секунд л хангалттай.</p></div>
+      <div class="how-card rv delay-1"><span class="how-icon">🏠</span><div class="how-num-wrap">2</div><h3>Байр сонгох</h3><p>Өөрийн дотуур байр эсвэл ойр угаалгийн газрыг сонгоно. Ачаалалыг бодит цагаар шалгана.</p></div>
+      <div class="how-card rv delay-2"><span class="how-icon">⏰</span><div class="how-num-wrap">3</div><h3>Цаг захиалах</h3><p>Чөлөөтэй машин болон тохиромжтой цагаа сонгоод захиалгаа баталгаажуулна.</p></div>
+      <div class="how-card rv delay-3"><span class="how-icon">📱</span><div class="how-num-wrap">4</div><h3>QR уншуулж нэвтрэх</h3><p>Захиалсан QR кодоороо машинаа нэвтэрч угаалгаа эхлүүлнэ. Дуусахад мэдэгдэл авна.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section id="booking" class="padded">
+  <div class="booking-bg"></div>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="rv" style="text-align:center;max-width:600px;margin:0 auto 0;">
+      <div class="section-eyebrow" style="justify-content:center;"><span class="line"></span> Захиалга</div>
+      <h2 class="section-h">Цаг захиалах</h2>
+      <p class="section-sub" style="margin:0 auto 16px;">Доорх алхмуудыг дагаж угаалгын цагаа баталгаажуулаарай.</p>
+    </div>
+    <div id="myBookingsSection" style="display:none;margin-top:32px;margin-bottom:32px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h3 style="font-size:1.1rem;font-weight:800;">📋 Миний захиалгууд</h3>
+        <button onclick="toggleMyBookings()" style="font-size:.82rem;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;">Нуух ↑</button>
+      </div>
+      <div class="booking-list" id="bookingList"></div>
+    </div>
+    <div class="booking-layout rv">
+      <div class="booking-sidebar">
+        <div class="booking-step-card active" id="step-nav-1" onclick="goToStep(1)">
+          <div class="bsc-num">1</div><div class="bsc-title">Байр сонгох</div><div class="bsc-desc">Байршил, байрыг сонгоно</div>
+        </div>
+        <div class="booking-step-card" id="step-nav-2" onclick="goToStep(2)">
+          <div class="bsc-num">2</div><div class="bsc-title">Машин сонгох</div><div class="bsc-desc">Чөлөөтэй машин сонгоно</div>
+        </div>
+        <div class="booking-step-card" id="step-nav-3" onclick="goToStep(3)">
+          <div class="bsc-num">3</div><div class="bsc-title">Цаг сонгох</div><div class="bsc-desc">Тохиромжтой цаг авна</div>
+        </div>
+        <div class="booking-step-card" id="step-nav-4" onclick="goToStep(4)">
+          <div class="bsc-num">4</div><div class="bsc-title">Баталгаажуулах</div><div class="bsc-desc">Захиалга батлана</div>
+        </div>
+      </div>
+      <div class="booking-panel" id="bookingPanel"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="padded">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-visual-wrap rv">
+        <div class="about-visual">
+          <h3>Яагаад Easy Laundry?</h3>
+          <p>Монголын оюутнуудын амьдралыг хялбар болгох зорилготой стартап компани бид угаалгын асуудлыг технологиор шийдэхээр гарлаа.</p>
+          <div class="about-feat"><span class="about-feat-icon">⏱️</span><span>Дараалалд хүлээхгүй, цагаа хэмнэнэ</span><span class="about-check">✓</span></div>
+          <div class="about-feat"><span class="about-feat-icon">🌐</span><span>24/7 онлайн захиалга</span><span class="about-check">✓</span></div>
+          <div class="about-feat"><span class="about-feat-icon">📱</span><span>QR кодоор машин нэвтрэх</span><span class="about-check">✓</span></div>
+          <div class="about-feat"><span class="about-feat-icon">📊</span><span>Байрны удирдлагад тайлан</span><span class="about-check">✓</span></div>
+        </div>
+        <div class="about-float-card afc1">
+          <div class="afc-num">98%</div>
+          <div class="afc-label">Хэрэглэгчийн сэтгэл ханамж</div>
+        </div>
+        <div class="about-float-card afc2" style="font-weight:700;color:var(--dark);">
+          ⚡ Дундажаар <span style="color:var(--blue);">40 мин</span> хэмнэдэг
+        </div>
+      </div>
+      <div class="about-text rv delay-2">
+        <div class="section-eyebrow"><span class="line"></span> Бидний тухай</div>
+        <h2 class="section-h">Оюутны амьдралыг хялбаршуулна</h2>
+        <p class="section-sub">Easy Laundry нь 2024 онд Монголын их дээд сургуулиудын дотуур байрны оюутнуудын өдөр тутмын асуудлыг шийдэх зорилгоор байгуулагдсан. Бидний зорилго бол технологи ашиглан угаалгын захиалгыг хялбар, хурдан, ухаалаг болгох явдал юм.</p>
+        <div class="values-grid">
+          <div class="val-card"><div class="val-icon">🎯</div><h4>Хялбар байдал</h4><p>Хэн ч хурдан ойлгож ашиглах боломжтой интерфэйс</p></div>
+          <div class="val-card"><div class="val-icon">📱</div><h4>QR нэвтрэлт</h4><p>Захиалгын QR кодоор машиныг автоматаар нэвтэрнэ</p></div>
+          <div class="val-card"><div class="val-icon">🔒</div><h4>Найдвартай байдал</h4><p>Таны захиалга баталгаатай, машин танд нөөцлөгдсөн</p></div>
+          <div class="val-card"><div class="val-icon">🤝</div><h4>Нийгэмлэг</h4><p>Оюутнуудад ээлтэй, байгааллагад тустай</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CONTACT -->
+<section id="contact" class="padded">
+  <div class="container">
+    <div class="rv" style="text-align:center;max-width:600px;margin:0 auto;">
+      <div class="section-eyebrow" style="justify-content:center;"><span class="line"></span> Холбоо барих</div>
+      <h2 class="section-h">Бидэнтэй холбогдоорой</h2>
+      <p class="section-sub" style="margin:0 auto;">Таны сургуульд Easy Laundry-г нэвтрүүлэхийг хүсвэл эсвэл асуулт байвал бидэнтэй холбоо баригтун.</p>
+    </div>
+    <div class="contact-layout">
+      <div class="contact-info-card rv">
+        <h3>Холбоо барих мэдээлэл</h3>
+        <p class="subtext">Бид ажлын өдрүүдэд 09:00–18:00 цагийн хооронд танд туслахад бэлэн байна.</p>
+        <div class="ci-item">
+          <div class="ci-icon">📧</div>
+          <div><div class="ci-label">Имэйл</div><div class="ci-value">6722010@muls.edu.mn</div></div>
+        </div>
+        <div class="ci-item">
+          <div class="ci-icon">📞</div>
+          <div><div class="ci-label">Утас</div><div class="ci-value">+976 8874-0577</div></div>
+        </div>
+        <div class="ci-item">
+          <div class="ci-icon">📍</div>
+          <div><div class="ci-label">Хаяг</div><div class="ci-value">Улаанбаатар, Монгол</div></div>
+        </div>
+        <div class="ci-item">
+          <div class="ci-icon">🕐</div>
+          <div><div class="ci-label">Ажлын цаг</div><div class="ci-value">Даваа–Баасан: 09:00–18:00</div></div>
+        </div>
+        <div class="contact-qr-wrap">
+          <p>📱 Вэб сайт руу хурдан орох</p>
+          <div id="contactQR"></div>
+        </div>
+      </div>
+      <div class="contact-form-card rv delay-2">
+        <h3>📩 Мессеж илгээх</h3>
+        <div class="form-grid">
+          <div class="cf-field"><label>НЭР</label><input type="text" id="cf-name" placeholder="Таны нэр"/></div>
+          <div class="cf-field"><label>УТАС / ИМЭЙЛ</label><input type="text" id="cf-contact" placeholder="Холбоо барих"/></div>
+        </div>
+        <div class="cf-field"><label>СУРГУУЛИЙН НЭР</label>
+          <select id="cf-univ">
+            <option value="">Сургуулиа сонгоно уу</option>
+            <option>МУИС</option><option>ШУТИС</option><option>ХААИС</option><option>МУБИС</option><option>УБИС</option><option>Бусад</option>
+          </select>
+        </div>
+        <div class="cf-field"><label>САНАЛ ХҮСЭЛТ</label><textarea id="cf-msg" placeholder="Та ямар асуулт, санал хүсэлттэй байна вэ?"></textarea></div>
+        <button class="btn-send" onclick="sendContact()">Илгээх →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="nav-brand" href="#home"><div class="nav-logo-icon">🧺</div> Easy Laundry</a>
+        <p>Монголын их дээд сургуулиудын дотуур байрны оюутнуудад зориулсан угаалгын цаг захиалгын платформ.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Навигаци</h4>
+        <a onclick="smoothNav('#home')">Нүүр</a>
+        <a onclick="smoothNav('#services')">Үйлчилгээ</a>
+        <a onclick="smoothNav('#how')">Хэрхэн ажилладаг</a>
+        <a onclick="smoothNav('#about')">Бидний тухай</a>
+      </div>
+      <div class="footer-col">
+        <h4>Үйлчилгээ</h4>
+        <a onclick="smoothNav('#booking')">Цаг захиалах</a>
+        <a onclick="smoothNav('#booking')">Ачаалал шалгах</a>
+        <a onclick="smoothNav('#app-download')">Апп татах</a>
+        <a href="#">Байгууллагад зориулсан</a>
+      </div>
+      <div class="footer-col">
+        <h4>Холбоо барих</h4>
+        <a href="mailto:6722010@muls.edu.mn">6722010@muls.edu.mn</a>
+        <a href="tel:+97688740577">+976 8874-0577</a>
+        <a href="#">Улаанбаатар, Монгол</a>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <span>© 2026 Easy Laundry. </span>
+      <span class="footer-made">Made with ❤️ for <span>Mongolian university of life sciences student</span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
